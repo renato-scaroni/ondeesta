@@ -52,10 +52,12 @@ class CMDParser(cmd.Cmd):
         return cmd.Cmd.cmdloop(self, intro)
 
     def specificHelp(cmd):
-
+        pass
     def do_help(self, rest):
         if rest:
             specificHelp(rest.split(" "))
+        else:
+            print helpmsg
     
     def quit():
         print "Ate logo!\n"
