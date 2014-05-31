@@ -35,6 +35,7 @@ tracking in the brazilian post office database
 
 TO DO:
 - Terminar console de gerenciamento de usuarios e encomendas
+- Implementar um sistema de autenticação simples para evitar problemas com adição de dado indesejado no BD
 - Criar uma página de front end para fazer uma interface amigavel de uso.
 - Arrumar um servidor decente para hospedar o projeto
 - Arrumar um domínio
