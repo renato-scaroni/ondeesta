@@ -25,13 +25,13 @@
 
 from peewee import *
 from hashlib import sha256
+from subprocess import call
 
 mailTrackDB = SqliteDatabase('bd.db')
 
 #########################################################
 #                       BD Models                       #
 #########################################################
-
 
 class SqliteModel(Model):
     """A base model that will use our Sqlite database"""
@@ -42,66 +42,71 @@ class User(SqliteModel):
     username = CharField()
     password = CharField()
     email = CharField()
-    mailpass = CharField()
 
 class Mails(SqliteModel):
-	user = ForeignKeyField(User, related_name='mails')
-	trackCode = CharField()
-	status = CharField()
-
+    user = ForeignKeyField(User, related_name='mails')
+    trackCode = CharField()
+    status = CharField()
+    packName = CharField()
+    
 #########################################################
 #                  Auxiliary Methods                    #
 #########################################################
 
 def showAllMail ():
-	for mail in Mails.select():
-		print mail.user.username, mail.trackCode
+    for mail in Mails.select():
+        print mail.user.username, mail.user.email, mail.packName, mail.trackCode
 
 def encryptPass (p):
-	return sha256(p).hexdigest()
+    return sha256(p).hexdigest()
 
-def addUser (user, p, e, ep):
-	if User.filter(username = user).count() > 0:
-		print "usuario ja existente"
-	else:
-		u = User(username = user, password = encryptPass(p), email = e, mailpass = ep)
-		u.save()
+def addUser (user, p, e):
+    if User.filter(username = user).count() > 0:
+        print "usuario ja existente"
+    else:
+        u = User(username = user, password = encryptPass(p), email = e)
+        u.save()
 
-def addMail (user, trackCode):
-	if User.filter(username = user).count() == 0:
-		print "Usuario inexistente. Favor criar um usuario antes de cadastrar uma encomenda"
-		return		
-	for u in User.filter(username = user):
-		if Mails.filter(trackCode = trackCode).count() > 0:
-			print "encomenda ja cadastrada"
-		else:
-			m = Mails(user = u, trackCode = trackCode, status = "")
-			m.save()
+def addMail (user, trackCode, packName):
+    if User.filter(username = user).count() == 0:
+        print "Usuario inexistente. Favor criar um usuario antes de cadastrar uma encomenda"
+        return      
+    for u in User.filter(username = user):
+        if Mails.filter(trackCode = trackCode).count() > 0:
+            print "encomenda ja cadastrada"
+        else:
+            m = Mails(user = u, trackCode = trackCode, status = "", packName=packName)
+            m.save()
 
 
 def sampleData ():
-	addUser ("Joao", "oi", "lala@gay.com", "oi")
-	
-	addMail("Joao", "RC433652875CN")
+    addUser ("eu", "teste", "renato.scaroni@gmail.com")
+    
+    addMail("eu", "RC433652875CN", "R4")
 
 def StartDB ():
-	print "Avaliando necessidade de criacao de um banco de dados"
-	try:
-		User.create_table()
-		Mails.create_table()
-		print "BD Criado com sucesso"
-	except Exception, e:
-		print "BD ja criado"
+    print "Avaliando necessidade de criacao de um banco de dados"
+    try:
+        User.create_table()
+        Mails.create_table()
+        print "BD Criado com sucesso"
+    except Exception, e:
+        print "BD ja criado"
+
+def DeleteDB():
+    call(["rm", "-f", "bd.db"])
 
 def main ():
-	StartDB()
-	y = raw_input("Deseja adicionar ao Bd usuario e encomenda de teste? [y|n]")
-	if y == "y":
-		sampleData()	
-	y = raw_input("Deseja executar query de teste? [y|n]")
-	if y == "y":
-		showAllMail()
+    StartDB()
+    y = raw_input("Deseja adicionar ao Bd usuario e encomenda de teste? [y|n]")
+    if y == "y":
+        sampleData()    
+    y = raw_input("Deseja executar query de teste? [y|n]")
+    if y == "y":
+        showAllMail()
+    y = raw_input("Deseja deletar o bd criado de teste? [y|n]")
+    if y == "y":
+        DeleteDB()
 
 if __name__ == '__main__':
-	main()
-	
+    main()

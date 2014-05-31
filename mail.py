@@ -28,7 +28,7 @@
 # torna-la disponivel a comunidade como software livre                 #
 ########################################################################
 
-# Import smtplib for the actual sending function
+# Import smtplib for the mail sending function
 import smtplib
 
 # Import tracking library
@@ -37,59 +37,70 @@ from correios import Correios
 # Import the email modules we'll need
 from email.mime.text import MIMEText
 
-import DB
+# Import Database module
+from DB import *
 
-#savedStatePath = "/home/bcc/scaroni/mailtrack/"
-savedStatePath = ""
+def CheckStatusUpdate(encomenda, status):
+    print "obtendo status atual"
+    newstatus = encomenda.status[-1].situacao
 
-savedState = savedStatePath + "textfile"
+    newstatus = newstatus.decode("windows-1252")
+    newstatus = newstatus.encode("utf-8")
+    status = status.decode("windows-1252")
+    status = status.encode("utf-8")
 
-trackingCode = "RC433652875CN"
+    print "comparando status"
+    if(status == newstatus):
+        print "status inalterado"
+        return None
+    return newstatus
 
-print "buscando encomenda"
-encomenda = Correios.get_encomenda (trackingCode)
-
-print "obtendo status atual"
-newstatus = encomenda.status[-1].situacao
-print "obtendo status anterior"
-fp = open(savedState, "rb")
-status = fp.read()
-fp.close()
-
-newstatus = newstatus.decode("windows-1252")
-newstatus = newstatus.encode("utf-8")
-status = status.decode("windows-1252")
-status = status.encode("utf-8")
-
-print "comparando status"
-if(status == newstatus):
-    print "status inalterado"
-else:
+def NotifyStatusUpdate(encomenda, newstatus, mail):
     print "atualizando status"
 
     s = "Encomenda: {0} \nData da atualizacao: {1} ".format (encomenda.identificador, encomenda.status[-1].atualizacao.date())
     s += "\nHora da atualizacao: {0}".format(encomenda.status[-1].atualizacao.time ())
     s += "\nPais: {0} \nSituacao: {1}".format(encomenda.status[-1].pais, newstatus) 
     s += "\nPais: {0}".format(encomenda.status[-1].observacao)
-
     print s
 
     print "salvando novo status"
-    fp = open(savedState, "wb")
-    fp.seek(0, 0)
-    fp.write(newstatus)
-    fp.close()
+
+    mail.status = newstatus
+    mail.save()
 
     print"gerando e-mail de notificacao"
+
     msg = MIMEText(s)
-    msg['Subject'] = "Onde esta o R4?"
+    msg['Subject'] = "Onde esta o " + mail.packName + "?"
 
     print "iniciando conexao"
+
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
-    s.login("onde.esta.mailtrack.system@gmail.com", "")
-    s.sendmail("onde.esta.mailtrack.system@gmail.com","", msg.as_string())
-
-#    s.sendmail("scaroni@linux.ime.usp.br", "renato.scaroni@gmail.com", msg.as_string())
+    s.login("", "")
+    s.sendmail("", mail.user.email, msg.as_string())
     s.quit()
+
     print "e-mail enviado!"
+
+def UpdateAndNotify(mail):
+    print mail.user.username, mail.packName, mail.trackCode
+    print "buscando encomenda"
+    encomenda = Correios.get_encomenda (mail.trackCode)
+    print "obtendo status anterior"
+    newstatus = CheckStatusUpdate(encomenda, mail.status)
+    if newstatus != None:
+        NotifyStatusUpdate(encomenda, newstatus, mail)
+
+def UpdateAndNotifyAll():
+    mailTrackDB = SqliteDatabase('bd.db')
+    mailTrackDB.connect()
+    for mail in Mails.select():
+        UpdateAndNotify(mail)
+        
+def main ():
+    UpdateAndNotifyAll()
+
+if __name__ == '__main__':
+    main()

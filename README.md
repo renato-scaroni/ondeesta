@@ -34,9 +34,7 @@ tracking in the brazilian post office database
 ======
 
 TO DO:
-- Refatorar código do módulo mail.py para separar em métodos
-- Terminar o suporte a multi-usuario.
-- Melhorar a modelagem do BD
+- Terminar console de gerenciamento de usuarios e encomendas
 - Criar uma página de front end para fazer uma interface amigavel de uso.
 - Arrumar um servidor decente para hospedar o projeto
 - Arrumar um domínio
