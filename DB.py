@@ -49,9 +49,29 @@ class Mails(SqliteModel):
     status = CharField()
     packName = CharField()
     
+
+#########################################################
+#                     Auth Classes                      #
+#########################################################
+
+class AuthenticatorTabajara(object):
+    """Simple authenticator"""
+    def __init__(self):
+        super(AuthenticatorTabajara, self).__init__()
+        self.arg = arg
+
+
 #########################################################
 #                  Auxiliary Methods                    #
 #########################################################
+
+def checkUser(u, p):
+    if User.filter(username = u).count() == 0:
+        print "usuario nao existente"
+    for u in User.filter(username = u):
+        if u.password == encryptPass(p):
+            return "OK"
+    return "NOK"
 
 def showAllMail ():
     for mail in Mails.select():
@@ -78,11 +98,26 @@ def addMail (user, trackCode, packName):
             m = Mails(user = u, trackCode = trackCode, status = "", packName=packName)
             m.save()
 
+def getUser(user):
+    return User.filter(username = user)
+
+def lsMailUser(user):
+    u = User.filter(username = user)
+    ms = Mails.filter(user = u)
+    i = 1
+    for m in ms:
+        print i, m.packName, m.trackCode, m.status 
+        i += 1
+    return ms
+
+def rmSingleMail(trackcode):
+    mail = Mails.get(Mails.trackCode == trackcode)
+    mail.delete_instance()
 
 def sampleData ():
-    addUser ("eu", "teste", "renato.scaroni@gmail.com")
+    addUser ("eu", "teste", "")
     
-    addMail("eu", "RC433652875CN", "R4")
+    addMail("eu", "", "")
 
 def StartDB ():
     print "Avaliando necessidade de criacao de um banco de dados"

@@ -76,10 +76,10 @@ def NotifyStatusUpdate(encomenda, newstatus, mail):
 
     print "iniciando conexao"
 
-    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s = smtplib.SMTP(, 587)
     s.starttls()
-    s.login("", "")
-    s.sendmail("", mail.user.email, msg.as_string())
+    s.login()
+    s.sendmail(, mail.user.email, msg.as_string())
     s.quit()
 
     print "e-mail enviado!"
@@ -87,7 +87,11 @@ def NotifyStatusUpdate(encomenda, newstatus, mail):
 def UpdateAndNotify(mail):
     print mail.user.username, mail.packName, mail.trackCode
     print "buscando encomenda"
-    encomenda = Correios.get_encomenda (mail.trackCode)
+    try:
+        encomenda = Correios.get_encomenda (mail.trackCode)
+    except Exception, e:
+        print "status desconhecido"
+        return
     print "obtendo status anterior"
     newstatus = CheckStatusUpdate(encomenda, mail.status)
     if newstatus != None:
@@ -98,6 +102,16 @@ def UpdateAndNotifyAll():
     mailTrackDB.connect()
     for mail in Mails.select():
         UpdateAndNotify(mail)
+        print "\n"
+
+def UpdateAndNotifyUser(user):
+    mailTrackDB = SqliteDatabase('bd.db')
+    mailTrackDB.connect()
+    u = getUser(user)
+    for mail in Mails.filter(user = u):
+        UpdateAndNotify(mail)
+        print "\n"
+
         
 def main ():
     UpdateAndNotifyAll()
