@@ -1,11 +1,9 @@
 Onde está?
 ======
+Aplicativo web para rastreio de encomendas enviadas ou recebidas através do correio brasileiro
 
--> Descrição:
-Um projeto pessoal escrito por Renato Scaroni.
-Conjunto de scripts em python que rastreia encomendas no correio brasileiro,
-com suporte a multi-usuarios e multi-encomendas e notificação de alteração de
-status via e-mail.
+Este é um projeto pessoal escrito por Renato Scaroni desenvolvido como forma de estudo da linguagem python
+e de conceitos básicos de desenvolvimento web.
 
 ======
 
